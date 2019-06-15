@@ -234,7 +234,7 @@ export default {
         number:this.synchronization.number,
         'platform':platform
       }
-      console.log(postData)
+
       axios.post(api+'/my_game/balance', qs.stringify(postData))
         .then(response=>{
           if(response.data.msg == 'success'){
@@ -259,8 +259,11 @@ export default {
         });
     },
     //飞单时间
-    header_time(){
-      axios.post(api+'/my_game/header_time', {geme_id:'123'})
+    header_time(geme_id=3){
+      let postData = {
+        geme_id
+      }
+      axios.post(api+'/my_game/header_time', qs.stringify(postData))
         .then(response=>{
           if(response.data.result == '登录成功'){
             this.$message({
