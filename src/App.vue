@@ -184,7 +184,7 @@
       <el-col :span="10">
         <div class="bg" style="height: 1114px;maring-right:-10px">
         <el-tabs type="card" v-model="activeName" v-if="tabs.length>0">
-              <el-tab-pane v-for="(item,index) in tabs" :key="index" :label="item.name" :name="index">
+              <el-tab-pane v-for="(item,index) in tabs" :key="index" :label="item.name">
                 <div class="tableBox">
                   <el-table
                     :data="tableData[item.gameId]"
@@ -390,10 +390,10 @@ export default {
               game_id.forEach((item,index) => {
                 this.header_time(formNmae,item.gameId,index)
               })
+              //设置tabs
+              this.tabs = game_id
             }
 
-            //设置tabs
-            this.tabs = game_id
             
           }else{
             this.$message({
