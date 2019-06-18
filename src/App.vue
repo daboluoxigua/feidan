@@ -190,7 +190,7 @@
                     :data="tableData[item.gameId]"
                     border
                     size='mini'
-                    height="1050"
+                    max-height="1050"
                     style="width: 100%">
                     <el-table-column
                       prop="create_time"
