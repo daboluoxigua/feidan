@@ -182,15 +182,15 @@
         </el-row>
       </el-col>
       <el-col :span="10">
-        <div class="bg" style="height: 1114px;">
-        <el-tabs type="card" v-if="tabs.length>0">
-              <el-tab-pane v-for="(item,index) in tabs" :key="index" :label="item.name" :name="item.name">
+        <div class="bg" style="height: 1114px;maring-right:-10px">
+        <el-tabs type="card" v-model="activeName" v-if="tabs.length>0">
+              <el-tab-pane v-for="(item,index) in tabs" :key="index" :label="item.name" :name="index">
                 <div class="tableBox">
                   <el-table
                     :data="tableData[item.gameId]"
                     border
                     size='mini'
-                    max-height="222"
+                    height="1050"
                     style="width: 100%">
                     <el-table-column
                       prop="create_time"
@@ -200,7 +200,7 @@
                     <el-table-column
                       prop="game_periods"
                       label="期数"
-                      width="180">
+                      width="90">
                     </el-table-column>
                     <el-table-column
                       prop="game_text"
@@ -233,7 +233,7 @@ export default {
     return {
       header_times:[],//存飞单剩余时间
       header_index:0,//存飞到第几个单
-      activeName: 'first',//tab显示
+      activeName: 0,//tab显示
       //同步设置
       synchronization: {
         number: "",
@@ -358,6 +358,14 @@ export default {
           postData = this.site3.login
         }
         postData.number = this.synchronization.number
+        if(postData.number == ''){
+          this.$message('请输入房间编号')
+          return
+        }
+        if(postData.login_url == ''){
+          this.$message('请输入盘口地址')
+          return
+        }
 
         axios.post(api+'/my_game/login', qs.stringify(postData))
         .then(response=>{
