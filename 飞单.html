@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>飞单设置</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #ebeef5;
+            height: 100%;
+        }
+
+        #app {
+            width: 100%;
+            height: 100%;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        #app .bg {
+            margin-top: 15px;
+            background: #fff;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .title {
+            padding: 25px;
+            text-align: center;
+            background: #f56c6c;
+            color: #fff;
+        }
+
+        .title.site {
+            background: #67c23a;
+        }
+
+        .title i {
+            font-size: 40px;
+        }
+
+        .title p {
+            margin-top: 10px;
+        }
+
+        .red input {
+            color: #f56c6c;
+        }
+
+        .wrap {
+            border-radius: 5px;
+            border: 1px solid #e4e7ed;
+            padding: 0 10px;
+        }
+
+        .tableBox {
+            padding: 10px;
+            border-radius: 0 0 5px 5px;
+            border: 1px solid #e4e7ed;
+            border-top: 0;
+        }
+
+        .txt {
+            color: #67C23A;
+            font-size: 14px;
+        }
+
+        .el-tabs__header {
+            margin-bottom: 0 !important;
+        }
+
+        .miniItem .el-form-item {
+            margin-bottom: 5px !important;
+        }
+
+        .mr {
+            margin-right: -10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <el-row class="bg" :gutter="20">
+            <el-col style="width:180px">
+                <div class="title">
+                    <i class="el-icon-setting"></i>
+                    <p>同步设置</p>
+                </div>
+            </el-col>
+            <el-col :span="16">
+                <el-form :model="synchronization" label-width="80px" size="small" class="miniItem">
+                    <el-form-item label="房间编号">
+                        <el-input v-model="synchronization.number"></el-input>
+                    </el-form-item>
+                    <el-form-item label="用户名">
+                        <el-input v-model="synchronization.userName"></el-input>
+                    </el-form-item>
+                    <el-form-item label="打盘游戏">
+                        <el-checkbox v-for="(item,index) in synchronization.game" :key="index" :label="item.name"
+                            v-model="item.checked"></el-checkbox>
+                    </el-form-item>
+                    <!-- <el-form-item label="语音提示">
+            <el-checkbox
+              v-for="(item,index) in synchronization.voice"
+              :key="index"
+              :label="item.name"
+              v-model="item.checked"
+            ></el-checkbox>
+                    </el-form-item>-->
+                    <el-form-item label="两面对冲">
+                        <el-checkbox label="开启两面对冲" v-model="synchronization.is_duichong"></el-checkbox>
+                    </el-form-item>
+                    <el-form-item label="开启飞单">
+                        <el-checkbox label="开启飞单" v-model="synchronization.is_feidan"></el-checkbox>
+                    </el-form-item>
+                    <el-form-item label>
+                        <el-button type="primary" @click="startFly">开始飞单</el-button>
+                    </el-form-item>
+                </el-form>
+            </el-col>
+            <el-col :span="4">
+                <div class="txt">
+                    这里是预留的文案：
+                    <p>1、</p>
+                    <p>2、</p>
+                    <p>3、</p>
+                    <p>4、</p>
+                </div>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20">
+            <el-col :span="16">
+                <el-row class="bg" :gutter="20">
+                    <el-col style="width:180px" :span="4">
+                        <div class="title site">
+                            <i class="el-icon-guide"></i>
+                            <p>线路1</p>
+                        </div>
+                    </el-col>
+                    <el-col :span="18">
+                        <el-form :model="site1" label-width="80px">
+                            <el-form-item label="线路类型">
+                                <el-radio-group v-model="site1.login.platform">
+                                    <el-radio label="IDC">IDC</el-radio>
+                                    <el-radio label="SGWIN">SGWIN</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                        </el-form>
+
+                        <el-col :span="12">
+                            <div class="wrap">
+                                <el-divider content-position="left">盘口信息</el-divider>
+                                <el-form size="mini" class="red" label-width="80px" v-model="site1.handicap">
+                                    <el-form-item label="账户状态">
+                                        <el-input v-model="site1.state.state" readonly></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="登录账户">
+                                        <el-input v-model="site1.state.user" readonly></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="当前余额">
+                                        <el-input readonly v-model="site1.handicap.balance"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="当前使用">
+                                        <el-input v-model="site1.handicap.betting" readonly></el-input>
+                                    </el-form-item>
+                                    <el-form-item label-width="0" style="text-align: center;">
+                                        <el-button type="primary" @click="balance(site1.login.platform,'site1')">刷新信息
+                                        </el-button>
+                                    </el-form-item>
+                                </el-form>
+                            </div>
+                        </el-col>
+                        <el-col :span="12">
+                            <div class="wrap">
+                                <el-divider content-position="left">登录设置</el-divider>
+                                <el-form size="mini" label-width="80px" v-model="site1.login">
+                                    <el-form-item label="盘口地址">
+                                        <el-input v-model="site1.login.login_url"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="登录账户">
+                                        <el-input v-model="site1.login.user"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="登录密码">
+                                        <el-input show-password v-model="site1.login.pass"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label-width="0" style="text-align: center;">
+                                        <el-button :type="site1.state.state ? 'info':'primary'" @click="login('site1')">
+                                            {{site1.isLogin}}</el-button>
+                                        <el-button type="danger" @click="logout('site1')">退出</el-button>
+                                    </el-form-item>
+                                    <el-form-item label>&nbsp;</el-form-item>
+                                </el-form>
+                            </div>
+                        </el-col>
+                    </el-col>
+                </el-row>
+                <el-row class="bg" :gutter="20">
+                    <el-col style="width:180px" :span="6">
+                        <div class="title site">
+                            <i class="el-icon-guide"></i>
+                            <p>线路2</p>
+                        </div>
+                    </el-col>
+                    <el-col :span="18">
+                        <el-form :model="site2" label-width="80px">
+                            <el-form-item label="线路类型">
+                                <el-radio-group v-model="site2.login.platform">
+                                    <el-radio label="IDC">IDC</el-radio>
+                                    <el-radio label="SGWIN">SGWIN</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                        </el-form>
+
+                        <el-col :span="12">
+                            <div class="wrap">
+                                <el-divider content-position="left">盘口信息</el-divider>
+                                <el-form size="mini" class="red" label-width="80px" v-model="site2.handicap">
+                                    <el-form-item label="账户状态">
+                                        <el-input v-model="site2.state.state" readonly></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="登录账户">
+                                        <el-input v-model="site2.state.user" readonly></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="当前余额">
+                                        <el-input readonly v-model="site2.handicap.balance"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="当前使用">
+                                        <el-input v-model="site2.handicap.betting" readonly></el-input>
+                                    </el-form-item>
+                                    <el-form-item label-width="0" style="text-align: center;">
+                                        <el-button type="primary" @click="balance(site2.login.platform,'site2')">刷新信息
+                                        </el-button>
+                                    </el-form-item>
+                                </el-form>
+                            </div>
+                        </el-col>
+                        <el-col :span="12">
+                            <div class="wrap">
+                                <el-divider content-position="left">登录设置</el-divider>
+                                <el-form size="mini" label-width="80px" v-model="site2.login">
+                                    <el-form-item label="盘口地址">
+                                        <el-input v-model="site2.login.login_url"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="登录账户">
+                                        <el-input v-model="site2.login.user"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="登录密码">
+                                        <el-input show-password v-model="site2.login.pass"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label-width="0" style="text-align: center;">
+                                        <el-button :type="site2.state.state ? 'info':'primary'" @click="login('site2')">
+                                            {{site2.isLogin}}</el-button>
+                                        <el-button type="danger" @click="logout('site2')">退出</el-button>
+                                    </el-form-item>
+                                    <el-form-item label>&nbsp;</el-form-item>
+                                </el-form>
+                            </div>
+                        </el-col>
+                    </el-col>
+                </el-row>
+                <el-row class="bg" :gutter="20">
+                    <el-col style="width:180px" :span="6">
+                        <div class="title site">
+                            <i class="el-icon-guide"></i>
+                            <p>线路3</p>
+                        </div>
+                    </el-col>
+                    <el-col :span="18">
+                        <el-form :model="site3" label-width="80px">
+                            <el-form-item label="线路类型">
+                                <el-radio-group v-model="site3.login.platform">
+                                    <el-radio label="IDC">IDC</el-radio>
+                                    <el-radio label="SGWIN">SGWIN</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                        </el-form>
+
+                        <el-col :span="12">
+                            <div class="wrap">
+                                <el-divider content-position="left">盘口信息</el-divider>
+                                <el-form size="mini" class="red" label-width="80px" v-model="site3.handicap">
+                                    <el-form-item label="账户状态">
+                                        <el-input v-model="site3.state.state" readonly></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="登录账户">
+                                        <el-input v-model="site3.state.user" readonly></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="当前余额">
+                                        <el-input readonly v-model="site3.handicap.balance"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="当前使用">
+                                        <el-input v-model="site3.handicap.betting" readonly></el-input>
+                                    </el-form-item>
+                                    <el-form-item label-width="0" style="text-align: center;">
+                                        <el-button type="primary" @click="balance(site3.login.platform,'site3')">刷新信息
+                                        </el-button>
+                                    </el-form-item>
+                                </el-form>
+                            </div>
+                        </el-col>
+                        <el-col :span="12">
+                            <div class="wrap">
+                                <el-divider content-position="left">登录设置</el-divider>
+                                <el-form size="mini" label-width="80px" v-model="site3.login">
+                                    <el-form-item label="盘口地址">
+                                        <el-input v-model="site3.login.login_url"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="登录账户">
+                                        <el-input v-model="site3.login.user"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="登录密码">
+                                        <el-input show-password v-model="site3.login.pass"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label-width="0" style="text-align: center;">
+                                        <el-button :type="site3.state.state ? 'info':'primary'" @click="login('site3')">
+                                            {{site3.isLogin}}</el-button>
+                                        <el-button type="danger" @click="logout('site3')">退出</el-button>
+                                    </el-form-item>
+                                    <el-form-item label>&nbsp;</el-form-item>
+                                </el-form>
+                            </div>
+                        </el-col>
+                    </el-col>
+                </el-row>
+            </el-col>
+            <el-col :span="8">
+                <div class="bg mr" style="height: 1114px;">
+                    <el-tabs type="card" v-model="activeName" v-if="tabs.length>0">
+                        <el-tab-pane v-for="(item,index) in tabs" :key="index" :label="item.name">
+                            <div class="tableBox">
+                                <el-table :data="tableData[item.gameId]" border size="mini" max-height="1050"
+                                    style="width: 100%">
+                                    <el-table-column prop="create_time" label="日期" width="180"></el-table-column>
+                                    <el-table-column prop="game_periods" label="期数" width="90"></el-table-column>
+                                    <el-table-column prop="game_text" label="内容"></el-table-column>
+                                    <el-table-column prop="return_msg" label="状态"></el-table-column>
+                                </el-table>
+                            </div>
+                        </el-tab-pane>
+                    </el-tabs>
+                    <div v-else>请先登录</div>
+                </div>
+            </el-col>
+        </el-row>
+    </div>
+
+
+    <script>
+        let api = "http://47.104.81.141:8050";
+
+        // import axios from "axios";
+        // import qs from "qs";
+        // import { clearTimeout } from "timers";
+        var app = new Vue({
+            el: '#app',
+            name: "app",
+            data() {
+                return {
+                    header_times: [], //存飞单剩余时间
+                    header_index: [], //存飞到第几个单
+                    activeName: 0, //tab显示
+                    //同步设置
+                    synchronization: {
+                        number: "",
+                        is_duichong: true,
+                        is_feidan: true,
+                        game: [
+                            { name: "北京赛车", obj: "a", gameId: 1, checked: true },
+                            { name: "幸运飞艇", obj: "b", gameId: 2, checked: true },
+                            { name: "极速时时彩", obj: "c", gameId: 3, checked: true },
+                            { name: "极速赛车", obj: "d", gameId: 4, checked: true },
+                            { name: "极速飞艇", obj: "e", gameId: 5, checked: true },
+                            { name: "澳洲幸运5", obj: "f", gameId: 6, checked: true },
+                            { name: "澳洲幸运10", obj: "g", gameId: 7, checked: true },
+                            { name: "重庆欢乐生肖", obj: "h", gameId: 8, checked: true }
+                        ],
+                        voice: [
+                            { name: "北京赛车", gameId: 1, checked: false },
+                            { name: "幸运废土", gameId: 2, checked: true }
+                        ]
+                    },
+                    tabs: [],
+                    //线路1、2、3
+                    site1: {
+                        state: {
+                            user: "",
+                            state: ""
+                        },
+                        handicap: {
+                            balance: "",
+                            betting: ""
+                        },
+                        login: {
+                            user: "dz037",
+                            pass: "QWqw1212",
+                            platform: "IDC",
+                            login_url: ""
+                        },
+                        setTime: "",
+                        isLogin: "登录"
+                    },
+                    site2: {
+                        state: {
+                            user: "",
+                            state: ""
+                        },
+                        handicap: {
+                            balance: "",
+                            betting: ""
+                        },
+                        login: {
+                            user: "",
+                            pass: "",
+                            platform: "",
+                            login_url: ""
+                        },
+                        setTime: "",
+                        isLogin: "登录"
+                    },
+                    site3: {
+                        state: {
+                            user: "",
+                            state: ""
+                        },
+                        handicap: {
+                            balance: "",
+                            betting: ""
+                        },
+                        login: {
+                            user: "",
+                            pass: "",
+                            platform: "",
+                            login_url: ""
+                        },
+                        setTime: "",
+                        isLogin: "登录"
+                    },
+                    tableData: {}
+                };
+            },
+            mounted() {
+                // this.time();
+                // const site1 = sessionStorage.getItem('site1'),
+                //       site2 = sessionStorage.getItem('site2'),
+                //       site3 = sessionStorage.getItem('site3')
+                // if(site1){
+                //   this.site1 = JSON.parse(site1)
+                // }
+                // if(site2){
+                //   this.site2 = JSON.parse(site2)
+                // }
+                // if(site3){
+                //   this.site3 = JSON.parse(site3)
+                // }
+                axios.defaults.withCredentials=true
+            },
+            methods: {
+                time() {
+                    const getTime = () =>
+                        axios.get(api + "/my_game/server_time").then(data => {
+                            this.server_time = data.data.server_time;
+                            setTimeout(() => {
+                                getTime();
+                            }, 1000);
+                        });
+                    getTime();
+                },
+                logout(formNmae) {
+                    let postData = {};
+                    if (formNmae == "site1") {
+                        postData = this.site1.login;
+                    } else if (formNmae == "site2") {
+                        postData = this.site2.login;
+                    } else if (formNmae == "site3") {
+                        postData = this.site3.login;
+                    }
+                    postData.number = this.synchronization.number;
+
+                    axios
+                        .post(api + "/my_game/logout", $.param(postData))
+                        .then(response => {
+                            if (response.data.status == 1) {
+                                this.$message({
+                                    message: response.data.msg,
+                                    type: "success"
+                                });
+
+                                //设置状态
+                                this[formNmae].state = {
+                                    state: "",
+                                    user: ""
+                                };
+                                this[formNmae].handicap = {
+                                    balance: "",
+                                    betting: ""
+                                };
+
+                                this[formNmae].isLogin = "登录";
+                                clearTimeout(this[formNmae].setTime);
+                                clearTimeout(this[formNmae].feidanTime);
+
+                                // sessionStorage.setItem(formNmae,JSON.stringify(this[formNmae]))
+                                return;
+                            } else {
+                                this.$message({
+                                    message: response.data.msg,
+                                    type: "error"
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                },
+                login(formNmae) {
+                    let postData = this[formNmae].login;
+
+                    postData.number = this.synchronization.number;
+                    if (postData.number == "") {
+                        this.$message("请输入房间编号");
+                        return;
+                    }
+                    if (postData.login_url == "") {
+                        this.$message("请输入盘口地址");
+                        return;
+                    }
+
+                    const loading = this.$loading({
+                        lock: true,
+                        text: "Loading",
+                        spinner: "el-icon-loading",
+                        background: "rgba(0, 0, 0, 0.7)"
+                    });
+                    axios
+                        .post(api + "/my_game/login", $.param(postData),{withCredentials:true})
+                        .then(response => {
+                            loading.close();
+
+                            if (response.data.result == "登录成功") {
+                                this.$message({
+                                    message: response.data.result,
+                                    type: "success"
+                                });
+                                clearTimeout(this[formNmae].setTime);
+                                clearTimeout(this[formNmae].feidanTime);
+
+                                //设置状态
+                                this[formNmae].state = {
+                                    state: "在线",
+                                    user: postData.user
+                                };
+
+                                this[formNmae].isLogin = "已登录";
+
+                                //登录成功后开始查询余额
+                                this.balance(this[formNmae].login.platform, formNmae);
+                                this[formNmae].setTime = setInterval(() => {
+                                    this.balance(
+                                        this[formNmae].login.platform,
+                                        formNmae
+                                    );
+                                }, 10000);
+
+                                //查询飞单时间
+                                this.header_times = []; //飞单时间先清空
+                                this.header_index = [];
+                                let game_id = this.synchronization.game.filter(
+                                    item => item.checked == true
+                                );
+                                if (
+                                    this.synchronization.is_feidan &&
+                                    game_id.length > 0
+                                ) {
+                                    game_id.forEach((item, index) => {
+                                        this.header_time(formNmae, item.gameId, index);
+                                    });
+                                    //设置tabs
+                                    this.tabs = game_id;
+                                }
+
+                                // sessionStorage.setItem(formNmae,JSON.stringify(this[formNmae]))
+                            } else {
+                                this.$message({
+                                    message: response.data.result,
+                                    type: "error"
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            loading.close();
+                            console.log(error);
+                        });
+                },
+                //余额查询
+                balance(platform, formNmae) {
+                    if (this[formNmae].state.state == "") {
+                        return;
+                    }
+
+                    let postData = {
+                        number: this.synchronization.number,
+                        platform: platform
+                    };
+
+                    // document.cookie="username=John Doe";
+                    // axios.defaults.withCredentials=true;
+                    // axios({
+                    //     method: 'post',
+                    //     url: api + "/my_game/balance",
+                    //     data:$.param(postData),
+                    //     headers:{
+                    //         'Authorization': 'Bearer ' + 1111111111,
+                    //         // "Cookie" : 'sessionId=' + 123 + '; recId=' + 00000000,
+                    //     } 
+                    // })
+                    axios
+                        .post(api + "/my_game/balance", $.param(postData))
+                        .then(response => {
+                            if (response.data.msg == "success") {
+                                this[formNmae].handicap = response.data;
+                            } else {
+                                this.$message({
+                                    message: response.data.msg,
+                                    type: "error"
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                },
+                startFly() {
+                    let game_id = this.synchronization.game.filter(
+                        item => item.checked == true
+                    );
+                    if (game_id.length == 0) {
+                        this.$message("请选择打盘游戏");
+                    }
+
+                    let formNmae = "";
+                    if (this.site1.state.state !== "") {
+                        formNmae = "site1";
+                        this.header_times = [];
+                        this.header_index = [];
+                        game_id.forEach((item, index) => {
+                            this.header_time(formNmae, item.gameId, index);
+                        });
+                    } else if (this.site2.state.state !== "") {
+                        formNmae = "site2";
+                        this.header_times = [];
+                        this.header_index = [];
+                        game_id.forEach((item, index) => {
+                            this.header_time(formNmae, item.gameId, index);
+                        });
+                    } else if (this.site3.state.state !== "") {
+                        formNmae = "site3";
+                        this.header_times = [];
+                        this.header_index = [];
+                        game_id.forEach((item, index) => {
+                            this.header_time(formNmae, item.gameId, index);
+                        });
+                    } else {
+                        this.$message("请先登录");
+                        return;
+                    }
+
+                    //设置tabs
+                    this.tabs = game_id;
+                },
+                //飞单时间
+                header_time(formNmae, game_id, index) {
+                    let postData = {
+                        game_id
+                    };
+                    axios
+                        .post(api + "/my_game/header_time", $.param(postData))
+                        .then(response => {
+                            if (response.data.msg == "success") {
+                                this.header_times.push(
+                                    response.data.header_times.filter(
+                                        item => item.header_time > 0
+                                    )
+                                );
+                                this.header_index[index] = 0;
+                                this.headerIndex(formNmae, game_id, index);
+                            } else {
+                                this.$message({
+                                    message: response.data.msg,
+                                    type: "error"
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                },
+                //飞单时间和飞单之间的中转 执行一个飞单后再执行第二个
+                headerIndex(formNmae, game_id, index) {
+                    let time =
+                        new Date(
+                            this.header_times[index][this.header_index[index]].h_t
+                        ).getTime() - new Date().getTime();
+                    this[formNmae].feidanTime = setTimeout(() => {
+                        this.order(
+                            formNmae,
+                            this.header_times[index][this.header_index[index]].periods,
+                            game_id
+                        );
+                        console.log("当前时间1", new Date(this.server_time));
+                        console.log(
+                            "需要执行的时间",
+                            this.header_times[index][this.header_index[index]].h_t
+                        );
+                        console.log(
+                            "间隔时间",
+                            this.header_times[index][this.header_index[index]]
+                                .header_time,
+                            time
+                        );
+                        this.header_index[index]++;
+                        this.headerIndex(formNmae, game_id, index);
+                    }, time);
+                },
+                //飞单接口
+                order(formNmae, periods, game_id) {
+                    let platform = this[formNmae].login.platform;
+
+                    let postData = {
+                        platform,
+                        game_id,
+                        user:this[formNmae].login.user,
+                        game_periods: periods,
+                        number: this.synchronization.number,
+                        is_duichong: this.synchronization.is_duichong ? 1 : 0
+                    };
+                   
+                    axios
+                        .post(api + "/my_game/order", $.param(postData))
+                        .then(response => {
+                            // this.$message(response.data.msg);
+                            if(response.data.status == 1){
+                                document.cookie = response.data.cookie
+                                this.orderResult(response.data);
+                            }
+                            
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                },
+                 //飞单结果
+                 orderResult(getData) {
+                    let postData = JSON.parse(getData.order_text);
+                    console.log(postData)
+                    
+                    axios({
+                        method: 'post',
+                        url: getData.bet_ur,
+                        data:$.param(postData),
+                        withCredentials:true,
+                        headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json; charset=UTF-8',
+                        "Access-Control-Allow-Credentials":"true",
+                        'Access-Control-Allow-Origin': '*'
+                        },//设置跨域请求头
+                    })
+                        .then(response => {
+                            if (response.data.status == 1) {
+                                // let name = this.synchronization.game[game_id-1].obj
+                                this.tableData[game_id] = response.data.order_results;
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                },
+                //飞单结果
+                // orderResult(game_id) {
+                //     let postData = {
+                //         game_id,
+                //         number: this.synchronization.number
+                //     };
+                //     axios
+                //         .post(api + "/my_game/order_result", $.param(postData))
+                //         .then(response => {
+                //             if (response.data.status == 1) {
+                //                 // let name = this.synchronization.game[game_id-1].obj
+                //                 this.tableData[game_id] = response.data.order_results;
+                //             }
+                //         })
+                //         .catch(error => {
+                //             console.log(error);
+                //         });
+                // }
+            }
+        });
+    </script>
+
+</body>
+
+</html>
