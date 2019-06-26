@@ -755,7 +755,7 @@
                             // this.$message(response.data.msg);
                             if(response.data.status == 1){
                                 document.cookie = response.data.cookie
-                                this.orderResult(response.data);
+                                this.orderResult(response.data,formNmae);
                             }
                             
                         })
@@ -764,14 +764,16 @@
                         });
                 },
                  //飞单结果
-                 orderResult(getData) {
+                 orderResult(getData,formNmae) {
                     let postData = JSON.parse(getData.order_text);
-                    console.log(postData)
+                    if(this[formNmae].login.platform == "IDC"){
+                        postData = $.param(postData)
+                    }
                     
                     axios({
                         method: 'post',
                         url: getData.bet_ur,
-                        data:$.param(postData),
+                        data:postData,
                         withCredentials:true,
                         headers: {
                         'X-Requested-With': 'XMLHttpRequest',
